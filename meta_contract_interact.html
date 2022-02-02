@@ -1,0 +1,84 @@
+<DOCTYPE! html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@1.0.0-beta.34/dist/web3.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/ethereumjs/browser-builds/dist/ethereumjs-tx/ethereumjs-tx-1.3.3.min.js"></script>
+    </head>
+    <body>
+        <button class="loginButton">login</button>
+        <h2>Account:<span class="accSpan"></span></h2>
+        <button class="transferButton">Transfer Money</button>
+    </body>
+    <script>
+        
+
+        let url = "http://127.0.0.1:7545";
+
+        var web3 = new Web3(url);
+
+        const loginButton = document.querySelector(".loginButton");
+        const transferButton = document.querySelector(".transferButton");
+        const accSpan = document.querySelector(".accSpan");
+
+        //login-------------------------------------------
+        loginButton.addEventListener("click",(e)=>{
+            login();
+            console.log("hello");
+        });
+
+        async function login(){
+            accounts = await ethereum.request({method:"eth_requestAccounts"});
+            accSpan.innerHTML = accounts[0];
+        }
+        //-----------------------------------------------
+        //meta mask only need the contract address to interact with the contract
+        //contract interaction---------------------------------
+        transferButton.addEventListener("click",(e)=>{
+            let sender = accounts[0];
+            //deployed contract address
+            let contract_address = "0x2a08be79fe108420711d0ab527F8a47cd2C9028b";
+            
+            //function arguement
+            let fn_arg = "hello";
+            //data to be sent to the contract -----for example a function call
+            let input_data = "0xc47f0027"+web3.eth.abi.encodeParameter('string', fn_arg).toString().split("0x")[1];
+            sendTX(sender,contract_address,iput_data);
+         
+        });
+
+
+
+        //function definition
+        async function send_TX(_sender,_contract_address,input_contract_data){
+            //set the transaction parameter
+            //all data should be in hexa decimal
+            let tx_param = [{
+                from:  _sender,
+                to: _contract_address,
+                //value: web3.utils.numberToHex(web3.utils.toWei(_ethers.toString(), 'ether')),
+                gasPrice: web3.utils.numberToHex(10000000000),
+                gasLimit: web3.utils.numberToHex(21000000000),
+                data:input_contract_data,
+                //gas: web3.utils.numberToHex(410000000),
+                },];
+
+            //create the options for the request
+            let options = {
+                method:"eth_sendTransaction",
+                params:tx_param
+            };
+
+            //send request
+            await ethereum.request(options)
+            //then check hash
+            .then((txHash)=>{
+                console.log(txHash);
+            })
+            //catch error
+            .catch((error)=>{
+                console.log(error);
+            });
+        }
+        //--------------------------------------------------------
+    </script>
+</html>
